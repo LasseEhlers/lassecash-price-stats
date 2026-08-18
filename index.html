@@ -71,9 +71,30 @@
             </div>
         </div>
 
+        <!-- BIG BOTTOM POOL STATS BANNER BUTTON -->
+        <div class="pt-2">
+            <a href="pool.html" class="group relative block w-full bg-gradient-to-r from-yellow-500 via-amber-400 to-yellow-500 hover:from-yellow-400 hover:to-amber-300 p-6 rounded-2xl shadow-xl shadow-yellow-500/10 border border-yellow-300/40 transition transform hover:-translate-y-1 text-center overflow-hidden">
+                <div class="absolute inset-0 bg-white/10 opacity-0 group-hover:opacity-100 transition"></div>
+                <div class="relative z-10 flex flex-col sm:flex-row items-center justify-between gap-4">
+                    <div class="flex items-center space-x-4 text-left">
+                        <div class="w-12 h-12 rounded-xl bg-black/20 border border-black/10 flex items-center justify-center shrink-0">
+                            <svg class="w-6 h-6 text-black" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M13 7h8m0 0v8m0-8l-8 8-4-4-6 6"></path></svg>
+                        </div>
+                        <div>
+                            <span class="block font-black text-black text-xl tracking-wide uppercase">View Pool Liquidity Statistics</span>
+                            <span class="block text-black/80 font-medium text-xs">Inspect SWAP.HIVE:LASSECASH pool reserves, volume, and active providers.</span>
+                        </div>
+                    </div>
+                    <span class="shrink-0 inline-flex items-center gap-2 bg-black text-yellow-400 px-5 py-3 rounded-xl font-black text-xs uppercase tracking-wider shadow-md group-hover:bg-slate-950 transition">
+                        Open Pool Stats &rarr;
+                    </span>
+                </div>
+            </a>
+        </div>
+
         <!-- Big Clear Button Back to LasseCash Price Stats (Same Tab) -->
         <div class="pt-2 pb-4 text-center">
-            <a href="https://www.lassecash.com/price-stats" class="inline-flex items-center justify-center w-full sm:w-auto px-8 py-4 bg-yellow-400 hover:bg-yellow-300 text-black font-black text-base uppercase tracking-wider rounded-xl shadow-lg shadow-yellow-400/20 transition transform hover:-translate-y-0.5">
+            <a href="https://www.lassecash.com/price-stats" class="inline-flex items-center justify-center w-full sm:w-auto px-8 py-4 bg-slate-800 hover:bg-slate-700 text-slate-200 font-bold text-sm uppercase tracking-wider rounded-xl transition">
                 ← Back to LasseCash
             </a>
         </div>
@@ -118,7 +139,6 @@
                     document.getElementById('stat-volume').innerText = parseFloat(cashMetrics.volume).toLocaleString() + ' LASSECASH';
                     
                     // Calculate USD using SWAP.HBD price in SWAP.HIVE (since 1 SWAP.HBD equals $1 USD)
-                    // SWAP.HBD lastPrice tells us how many SWAP.HIVE cost 1 SWAP.HBD ($1)
                     if (hbdMetrics && parseFloat(hbdMetrics.lastPrice) > 0) {
                         const hivePerHbd = parseFloat(hbdMetrics.lastPrice);
                         const priceUsd = priceHive / hivePerHbd;
