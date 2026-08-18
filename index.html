@@ -47,7 +47,7 @@
             <div class="bg-slate-900/90 border border-slate-800 p-5 rounded-xl shadow">
                 <span class="text-slate-400 text-xs font-semibold uppercase tracking-wider">Current Price</span>
                 <div id="stat-price" class="text-2xl font-bold mt-2 text-yellow-400">Loading...</div>
-                <span id="stat-price-change" class="text-xs text-slate-500">--</span>
+                <div id="stat-price-usd" class="text-xs text-slate-400 mt-1">-- USD</div>
             </div>
             <div class="bg-slate-900/90 border border-slate-800 p-5 rounded-xl shadow">
                 <span class="text-slate-400 text-xs font-semibold uppercase tracking-wider">24H Volume</span>
@@ -91,6 +91,7 @@
 
         async function initDashboard() {
             try {
+                // Fetch LasseCash and SWAP.HBD live metrics simultaneously
                 const response = await fetch('https://api.hive-engine.com/rpc/contracts', {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
@@ -100,18 +101,32 @@
                         params: {
                             contract: 'market',
                             table: 'metrics',
-                            query: { symbol: 'LASSECASH' }
+                            query: { symbol: { $in: ['LASSECASH', 'SWAP.HBD'] } }
                         },
                         id: 1
                     })
                 });
                 const json = await response.json();
-                const metrics = json.result && json.result[0] ? json.result[0] : null;
+                const results = json.result || [];
+                
+                const cashMetrics = results.find(r => r.symbol === 'LASSECASH');
+                const hbdMetrics = results.find(r => r.symbol === 'SWAP.HBD');
 
-                if (metrics) {
-                    document.getElementById('stat-price').innerText = parseFloat(metrics.lastPrice).toFixed(4) + ' SWAP.HIVE';
-                    document.getElementById('stat-volume').innerText = parseFloat(metrics.volume).toLocaleString() + ' LASSECASH';
+                if (cashMetrics) {
+                    const priceHive = parseFloat(cashMetrics.lastPrice);
+                    document.getElementById('stat-price').innerText = priceHive.toFixed(4) + ' SWAP.HIVE';
+                    document.getElementById('stat-volume').innerText = parseFloat(cashMetrics.volume).toLocaleString() + ' LASSECASH';
                     
+                    // Calculate USD using SWAP.HBD price in SWAP.HIVE (since 1 SWAP.HBD equals $1 USD)
+                    // SWAP.HBD lastPrice tells us how many SWAP.HIVE cost 1 SWAP.HBD ($1)
+                    if (hbdMetrics && parseFloat(hbdMetrics.lastPrice) > 0) {
+                        const hivePerHbd = parseFloat(hbdMetrics.lastPrice);
+                        const priceUsd = priceHive / hivePerHbd;
+                        document.getElementById('stat-price-usd').innerText = '≈ $' + priceUsd.toFixed(6) + ' USD';
+                    } else {
+                        document.getElementById('stat-price-usd').innerText = 'USD feed unavailable';
+                    }
+
                     document.getElementById('status-text').innerText = 'Connected live to Hive Engine Node (Symbol: LASSECASH)';
                     const badge = document.getElementById('api-badge');
                     badge.innerText = 'API Online';
@@ -129,9 +144,7 @@
                 const historyJson = await historyRes.json();
                 const rawPoints = historyJson.data_points || [];
 
-                // Filter data to start strictly from March 24, 2025 onwards
                 globalDataPoints = rawPoints.filter(d => d.date >= '2025-03-24');
-
                 renderChart(globalDataPoints, "Timeline: Day-to-Day Active History (" + globalDataPoints.length + " Days)");
             } catch (err) {
                 console.error("Failed to load daily_history.json:", err);
@@ -140,7 +153,6 @@
 
         function renderChart(dataPoints, subtitleText) {
             const ctx = document.getElementById('priceChart').getContext('2d');
-            
             const labels = dataPoints.map(d => d.date);
             const prices = dataPoints.map(d => d.price);
 
@@ -170,10 +182,7 @@
                     maintainAspectRatio: false,
                     plugins: {
                         legend: { display: false },
-                        tooltip: {
-                            mode: 'index',
-                            intersect: false,
-                        }
+                        tooltip: { mode: 'index', intersect: false }
                     },
                     scales: {
                         x: {

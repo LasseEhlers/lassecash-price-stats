@@ -1,0 +1,209 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>LasseStats — Pool Statistics</title>
+    <!-- Favicon -->
+    <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'><rect width='32' height='32' rx='6' fill='black' stroke='%23facc15' stroke-width='2'/><text x='50%' y='55%' dominant-baseline='central' text-anchor='middle' font-family='monospace' font-weight='900' font-size='20' fill='%23facc15'>L</text></svg>">
+    <!-- Tailwind CSS CDN -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;900&display=swap" rel="stylesheet">
+    <style>body { font-family: 'Inter', sans-serif; }</style>
+</head>
+<body class="bg-[#0b0f19] text-slate-100 font-sans min-h-screen p-4 md:p-6 flex flex-col justify-between selection:bg-yellow-400 selection:text-black">
+
+    <div class="max-w-6xl mx-auto space-y-6 w-full flex-grow">
+        
+        <!-- Header Branding Bar -->
+        <div class="bg-slate-900/90 border border-slate-800 rounded-xl p-4 flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
+            <div class="flex items-center space-x-3.5">
+                <div class="w-11 h-11 rounded-lg bg-black border-2 border-yellow-400 flex items-center justify-center shadow-lg shadow-yellow-400/10">
+                    <span class="font-black text-2xl text-yellow-400 tracking-tighter" style="font-family: monospace;">L</span>
+                </div>
+                <div>
+                    <span class="font-black text-xl tracking-wider text-white">LasseStats Pool</span>
+                    <span class="block text-[11px] font-semibold tracking-widest text-yellow-400 uppercase">SWAP.HIVE:LASSECASH Liquidity</span>
+                </div>
+            </div>
+            
+            <div class="flex items-center gap-2">
+                <span class="bg-yellow-950/60 text-yellow-400 border border-yellow-800/40 text-[11px] px-2.5 py-1 rounded-md font-medium">Marketpools Contract</span>
+                <span id="api-badge" class="px-2.5 py-1 rounded-md text-[11px] font-semibold bg-amber-950/80 text-amber-400 border border-amber-800/50">Connecting...</span>
+            </div>
+        </div>
+
+        <!-- Metric Cards -->
+        <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+            <div class="bg-slate-900/90 border border-slate-800 p-5 rounded-xl shadow">
+                <span class="text-slate-400 text-xs font-semibold uppercase tracking-wider">Pool Reserve (Hive)</span>
+                <div id="pool-token1" class="text-xl font-bold mt-2 text-yellow-400">Loading...</div>
+            </div>
+            <div class="bg-slate-900/90 border border-slate-800 p-5 rounded-xl shadow">
+                <span class="text-slate-400 text-xs font-semibold uppercase tracking-wider">Pool Reserve (LasseCash)</span>
+                <div id="pool-token2" class="text-xl font-bold mt-2 text-slate-100">Loading...</div>
+            </div>
+            <div class="bg-slate-900/90 border border-slate-800 p-5 rounded-xl shadow">
+                <span class="text-slate-400 text-xs font-semibold uppercase tracking-wider">24H Volume</span>
+                <div id="pool-volume" class="text-xl font-bold mt-2 text-emerald-400">Loading...</div>
+            </div>
+            <div class="bg-slate-900/90 border border-slate-800 p-5 rounded-xl shadow">
+                <span class="text-slate-400 text-xs font-semibold uppercase tracking-wider">Total Providers</span>
+                <div id="pool-providers-count" class="text-xl font-bold mt-2 text-sky-400">Loading...</div>
+            </div>
+        </div>
+
+        <!-- Liquidity Providers Table Section -->
+        <div class="bg-slate-900/90 border border-slate-800 p-6 rounded-xl shadow-xl space-y-4">
+            <div>
+                <h2 class="text-lg font-bold text-slate-100">Active Liquidity Providers</h2>
+                <p class="text-xs text-slate-400">Comprehensive breakdown of all accounts supplying liquidity to the SWAP.HIVE:LASSECASH pool.</p>
+            </div>
+
+            <div class="overflow-x-auto">
+                <table class="w-full text-left border-collapse">
+                    <thead>
+                        <tr class="border-b border-slate-800 text-xs text-slate-400 uppercase tracking-wider">
+                            <th class="py-3 px-4">Account</th>
+                            <th class="py-3 px-4">Est. SWAP.HIVE</th>
+                            <th class="py-3 px-4">Est. LASSECASH</th>
+                            <th class="py-3 px-4 text-right">Pool Share</th>
+                        </tr>
+                    </thead>
+                    <tbody id="providers-table-body" class="divide-y divide-slate-800/60 text-sm">
+                        <tr>
+                            <td colspan="4" class="py-6 text-center text-slate-500">Querying chain liquidity positions...</td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+
+        <!-- Navigation Buttons -->
+        <div class="pt-2 pb-4 flex flex-col sm:flex-row justify-center gap-4">
+            <a href="index.html" class="px-6 py-3 bg-slate-800 hover:bg-slate-700 text-slate-200 font-bold text-sm uppercase tracking-wider rounded-xl transition text-center">
+                ← Back to Price Stats
+            </a>
+            <a href="https://www.lassecash.com" class="px-6 py-3 bg-yellow-400 hover:bg-yellow-300 text-black font-black text-sm uppercase tracking-wider rounded-xl transition text-center">
+                Back to LasseCash
+            </a>
+        </div>
+    </div>
+
+    <!-- Footer -->
+    <footer class="max-w-6xl mx-auto w-full mt-8 py-4 text-center text-xs text-slate-500 border-t border-slate-800/80">
+        <a href="https://www.lassecash.com" class="hover:text-yellow-400 transition font-medium">LasseCash.com</a> &mdash; AnCap Society Tools
+    </footer>
+
+    <!-- Script to Fetch Real Data via CORS Proxy -->
+    <script>
+        async function queryHiveEngine(method, params) {
+            const rpcPayload = {
+                jsonrpc: '2.0',
+                method: method,
+                params: params,
+                id: 1
+            };
+
+            // Using corsproxy.io to safely tunnel browser requests to the Hive-Engine node
+            const targetUrl = 'https://api.hive-engine.com/rpc/contracts';
+            const proxyUrl = `https://corsproxy.io/?` + encodeURIComponent(targetUrl);
+
+            const res = await fetch(proxyUrl, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(rpcPayload)
+            });
+            const json = await res.json();
+            return json.result;
+        }
+
+        async function loadLivePoolData() {
+            try {
+                const candidateIds = ['SWAP.HIVE:LASSECASH', 'LASSECASH:SWAP.HIVE'];
+                let pool = null;
+                let activePoolId = '';
+
+                for (const pid of candidateIds) {
+                    const result = await queryHiveEngine('findOne', {
+                        contract: 'marketpools',
+                        table: 'pools',
+                        query: { poolId: pid }
+                    });
+                    if (result) {
+                        pool = result;
+                        activePoolId = pid;
+                        break;
+                    }
+                }
+
+                if (!pool) {
+                    throw new Error("Pool record not found on chain.");
+                }
+
+                let totalShares = parseFloat(pool.totalShares || 1);
+                let reserveHive = parseFloat(pool.baseQuantity || 0);
+                let reserveCash = parseFloat(pool.quoteQuantity || 0);
+                let volume24h = parseFloat(pool.volume || 0);
+
+                if (activePoolId === 'LASSECASH:SWAP.HIVE') {
+                    reserveCash = parseFloat(pool.baseQuantity || 0);
+                    reserveHive = parseFloat(pool.quoteQuantity || 0);
+                }
+
+                document.getElementById('pool-token1').innerText = reserveHive.toLocaleString(undefined, {maximumFractionDigits: 2}) + ' HIVE';
+                document.getElementById('pool-token2').innerText = reserveCash.toLocaleString(undefined, {maximumFractionDigits: 2}) + ' LASSECASH';
+                document.getElementById('pool-volume').innerText = volume24h.toLocaleString(undefined, {maximumFractionDigits: 2}) + ' Vol';
+
+                const positions = await queryHiveEngine('find', {
+                    contract: 'marketpools',
+                    table: 'liquidityPositions',
+                    query: { poolId: activePoolId }
+                }) || [];
+
+                document.getElementById('pool-providers-count').innerText = positions.length;
+
+                const tbody = document.getElementById('providers-table-body');
+                tbody.innerHTML = '';
+
+                if (positions.length === 0) {
+                    tbody.innerHTML = `<tr><td colspan="4" class="py-6 text-center text-slate-500">No liquidity providers found for this pool.</td></tr>`;
+                } else {
+                    positions.sort((a, b) => parseFloat(b.shares) - parseFloat(a.shares));
+
+                    positions.forEach(pos => {
+                        const shares = parseFloat(pos.shares || 0);
+                        const shareRatio = shares / totalShares;
+                        const percentage = (shareRatio * 100).toFixed(2);
+                        
+                        const userHive = (reserveHive * shareRatio).toLocaleString(undefined, {maximumFractionDigits: 2});
+                        const userCash = (reserveCash * shareRatio).toLocaleString(undefined, {maximumFractionDigits: 2});
+
+                        const tr = document.createElement('tr');
+                        tr.className = 'hover:bg-slate-800/40 transition';
+                        tr.innerHTML = `
+                            <td class="py-3 px-4 font-semibold text-yellow-400">@${pos.account}</td>
+                            <td class="py-3 px-4 text-slate-300">${userHive} HIVE</td>
+                            <td class="py-3 px-4 text-slate-300">${userCash} LASSECASH</td>
+                            <td class="py-3 px-4 text-right font-medium text-slate-200">${percentage}%</td>
+                        `;
+                        tbody.appendChild(tr);
+                    });
+                }
+
+                const badge = document.getElementById('api-badge');
+                badge.innerText = 'Online';
+                badge.className = 'px-2.5 py-1 rounded-md text-[11px] font-semibold bg-emerald-950 text-emerald-400 border border-emerald-800/50';
+
+            } catch (err) {
+                console.error("Chain connection error:", err);
+                const badge = document.getElementById('api-badge');
+                badge.innerText = 'Error Loading';
+                badge.className = 'px-2.5 py-1 rounded-md text-[11px] font-semibold bg-rose-950 text-rose-400 border border-rose-800/50';
+            }
+        }
+
+        loadLivePoolData();
+    </script>
+</body>
+</html>
