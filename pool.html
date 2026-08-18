@@ -95,7 +95,7 @@
         <a href="https://www.lassecash.com" class="hover:text-yellow-400 transition font-medium">LasseCash.com</a> &mdash; AnCap Society Tools
     </footer>
 
-    <!-- Script to Fetch Real Data, Pull Farm Rewards from Tribaldex, and Calculate APY -->
+    <!-- Script to Fetch Real Data with Rounded Numbers (No fixed decimals for Hive or LasseCash) -->
     <script>
         async function queryTribaldex(method, params) {
             const rpcPayload = {
@@ -148,10 +148,9 @@
                     reserveHive = parseFloat(pool.quoteQuantity || 0);
                 }
 
-                document.getElementById('pool-token1').innerText = reserveHive.toLocaleString(undefined, {minimumFractionDigits: 3, maximumFractionDigits: 3}) + ' HIVE';
-                document.getElementById('pool-token2').innerText = reserveCash.toLocaleString(undefined, {minimumFractionDigits: 8, maximumFractionDigits: 8}) + ' LASSECASH';
+                document.getElementById('pool-token1').innerText = Math.round(reserveHive).toLocaleString() + ' HIVE';
+                document.getElementById('pool-token2').innerText = Math.round(reserveCash).toLocaleString() + ' LASSECASH';
 
-                // Fetch farming rewards directly from marketpools farms table
                 let dailyRewardsAmount = 0;
                 try {
                     const farmData = await queryTribaldex('findOne', {
@@ -161,7 +160,6 @@
                     });
                     
                     if (farmData) {
-                        // Check common reward fields utilized in Tribaldex marketpools farms
                         if (farmData.rewardPerDay) {
                             dailyRewardsAmount = parseFloat(farmData.rewardPerDay);
                         } else if (farmData.dailyRewards) {
@@ -171,7 +169,6 @@
                         }
                     }
 
-                    // Fallback to pool object attributes if farm table query is blank
                     if (!dailyRewardsAmount && pool.rewardsDaily) {
                         dailyRewardsAmount = parseFloat(pool.rewardsDaily);
                     }
@@ -179,18 +176,13 @@
                     console.warn("Could not fetch explicit farm rewards, using fallback calculation logic.");
                 }
 
-                // Fallback hardcoded approximation matching Tribaldex UI if smart contract farm lookup returns nested structures
                 if (dailyRewardsAmount <= 0) {
                     dailyRewardsAmount = 2808.9888; 
                 }
 
-                document.getElementById('pool-rewards').innerText = dailyRewardsAmount.toLocaleString(undefined, {minimumFractionDigits: 4, maximumFractionDigits: 4}) + ' LASSECASH';
+                document.getElementById('pool-rewards').innerText = Math.round(dailyRewardsAmount).toLocaleString() + ' LASSECASH';
 
-                // APY Calculation Formula:
-                // Total Pool Value in Hive = reserveHive * 2 (assuming balanced 50/50 pool value)
                 let totalPoolValueHive = reserveHive * 2;
-                
-                // Market price of LASSECASH in HIVE terms
                 let cashPriceInHive = reserveHive / reserveCash;
                 let dailyRewardsValueHive = dailyRewardsAmount * cashPriceInHive;
 
@@ -223,8 +215,8 @@
                         const shareRatio = shares / totalShares;
                         const percentage = (shareRatio * 100).toFixed(2);
                         
-                        const userHive = (reserveHive * shareRatio).toLocaleString(undefined, {minimumFractionDigits: 3, maximumFractionDigits: 3});
-                        const userCash = (reserveCash * shareRatio).toLocaleString(undefined, {minimumFractionDigits: 8, maximumFractionDigits: 8});
+                        const userHive = Math.round(reserveHive * shareRatio).toLocaleString();
+                        const userCash = Math.round(reserveCash * shareRatio).toLocaleString();
 
                         const tr = document.createElement('tr');
                         tr.className = 'hover:bg-slate-800/40 transition';
