@@ -3,7 +3,9 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>LasseCash Price Stats</title>
+    <title>LasseStats — LasseCash Price Statistics</title>
+    <!-- Favicon -->
+    <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'><rect width='32' height='32' rx='6' fill='black' stroke='%23facc15' stroke-width='2'/><text x='50%' y='55%' dominant-baseline='central' text-anchor='middle' font-family='monospace' font-weight='900' font-size='20' fill='%23facc15'>L</text></svg>">
     <!-- Tailwind CSS CDN -->
     <script src="https://cdn.tailwindcss.com"></script>
     <!-- Chart.js CDN -->
@@ -15,15 +17,28 @@
 
     <div class="max-w-6xl mx-auto space-y-6 w-full flex-grow">
         
-        <!-- Status & Node Info Banner -->
-        <div class="bg-slate-900/90 border border-slate-800 rounded-xl p-4 flex flex-col sm:flex-row justify-between items-start sm:items-center text-sm gap-2">
-            <div>
-                <span class="text-yellow-400 font-semibold uppercase text-[10px] tracking-wider block mb-0.5">Active Data Stream</span>
-                <p id="status-text" class="text-slate-300 text-xs">Connecting to Hive Engine live nodes...</p>
+        <!-- Header Branding Bar with LasseStats Logo -->
+        <div class="bg-slate-900/90 border border-slate-800 rounded-xl p-4 flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
+            <div class="flex items-center space-x-3.5">
+                <div class="w-11 h-11 rounded-lg bg-black border-2 border-yellow-400 flex items-center justify-center shadow-lg shadow-yellow-400/10">
+                    <span class="font-black text-2xl text-yellow-400 tracking-tighter" style="font-family: monospace;">L</span>
+                </div>
+                <div>
+                    <span class="font-black text-xl tracking-wider text-white">LasseStats</span>
+                    <span class="block text-[11px] font-semibold tracking-widest text-yellow-400 uppercase">Powered by LasseCash</span>
+                </div>
             </div>
-            <div class="flex items-center gap-2">
-                <span class="bg-yellow-950/60 text-yellow-400 border border-yellow-800/40 text-[11px] px-2.5 py-1 rounded-md font-medium">Hive Engine (2019–Present)</span>
-                <span id="api-badge" class="px-2.5 py-1 rounded-md text-[11px] font-semibold bg-amber-950/80 text-amber-400 border border-amber-800/50">Checking API...</span>
+            
+            <!-- Status & Node Info Banner Badge -->
+            <div class="flex flex-col sm:flex-row items-start sm:items-center text-sm gap-2">
+                <div>
+                    <span class="text-yellow-400 font-semibold uppercase text-[10px] tracking-wider block mb-0.5 sm:text-right">Active Data Stream</span>
+                    <p id="status-text" class="text-slate-300 text-xs">Connecting to Hive Engine live nodes...</p>
+                </div>
+                <div class="flex items-center gap-2">
+                    <span class="bg-yellow-950/60 text-yellow-400 border border-yellow-800/40 text-[11px] px-2.5 py-1 rounded-md font-medium">Hive Engine (2019–Present)</span>
+                    <span id="api-badge" class="px-2.5 py-1 rounded-md text-[11px] font-semibold bg-amber-950/80 text-amber-400 border border-amber-800/50">Checking API...</span>
+                </div>
             </div>
         </div>
 
