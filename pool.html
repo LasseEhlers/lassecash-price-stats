@@ -22,8 +22,8 @@
                     <span class="font-black text-2xl text-yellow-400 tracking-tighter" style="font-family: monospace;">L</span>
                 </div>
                 <div>
-                    <span class="font-black text-xl tracking-wider text-white">LasseStats Pool</span>
-                    <span class="block text-[11px] font-semibold tracking-widest text-yellow-400 uppercase">SWAP.HIVE:LASSECASH Liquidity</span>
+                    <span class="font-black text-xl tracking-wider text-white">LasseStats</span>
+                    <span class="block text-[11px] font-semibold tracking-widest text-yellow-400 uppercase">Powered by LasseCash</span>
                 </div>
             </div>
             
@@ -33,7 +33,7 @@
             </div>
         </div>
 
-        <!-- Metric Cards (Reordered: APY, Daily Rewards, Reserve Lassecash, Reserve Hive) -->
+        <!-- Metric Cards (APY, Daily Rewards, Reserve Lassecash, Reserve SWAP.HIVE) -->
         <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
             <div class="bg-slate-900/90 border border-slate-800 p-5 rounded-xl shadow">
                 <span class="text-slate-400 text-xs font-semibold uppercase tracking-wider">Estimated APY</span>
@@ -153,7 +153,7 @@
                     reserveHive = parseFloat(pool.quoteQuantity || 0);
                 }
 
-                document.getElementById('pool-token1').innerText = formatPlain(reserveHive) + ' HIVE';
+                document.getElementById('pool-token1').innerText = formatPlain(reserveHive) + ' SWAP.HIVE';
                 document.getElementById('pool-token2').innerText = formatPlain(reserveCash) + ' LASSECASH';
 
                 let dailyRewardsAmount = 0;
@@ -227,7 +227,7 @@
                         tr.className = 'hover:bg-slate-800/40 transition';
                         tr.innerHTML = `
                             <td class="py-3 px-4 font-semibold text-yellow-400">@${pos.account}</td>
-                            <td class="py-3 px-4 text-slate-300">${userHive} HIVE</td>
+                            <td class="py-3 px-4 text-slate-300">${userHive} SWAP.HIVE</td>
                             <td class="py-3 px-4 text-slate-300">${userCash} LASSECASH</td>
                             <td class="py-3 px-4 text-right font-medium text-slate-200">${percentage}%</td>
                         `;
