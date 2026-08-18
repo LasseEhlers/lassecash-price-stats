@@ -3,52 +3,96 @@ const fs = require('fs');
 const path = require('path');
 
 const SYMBOL = 'LASSECASH';
-const INCEPTION_DATE = new Date('2019-06-28');
 const TODAY = new Date();
+const TWO_YEARS_AGO = new Date();
+TWO_YEARS_AGO.setFullYear(TODAY.getFullYear() - 2);
 
-async function buildFullHistory() {
-    console.log(`Building full daily real data archive for ${SYMBOL} from ${INCEPTION_DATE.toISOString().split('T')[0]} to today...`);
+async function fetchTwoYearHistory() {
+    console.log(`Fetching available 2-year history for ${SYMBOL}...`);
     
-    let dataPoints = [];
-    let currentDate = new Date(INCEPTION_DATE);
+    let rawItems = [];
+    try {
+        const url = `https://history.hive-engine.com/marketHistory?symbol=${SYMBOL}&limit=1000`;
+        const response = await axios.get(url, { timeout: 10000 });
+        if (response.data && Array.isArray(response.data)) {
+            rawItems = response.data;
+        }
+    } catch (err) {
+        console.log("Error fetching market history:", err.message);
+    }
 
-    // To prevent hammering public nodes with thousands of individual daily requests, 
-    // we query the historical trade index or build day-by-day step iteration.
+    const dailyMap = {};
+    rawItems.forEach(item => {
+        const timestamp = item.timestamp;
+        if (timestamp) {
+            const dateStr = new Date(timestamp > 10000000000 ? timestamp : timestamp * 1000).toISOString().split('T')[0];
+            const closePrice = parseFloat(item.closePrice || 0);
+            const volume = parseFloat(item.volumeToken || item.volumeHive || 0);
+
+            if (closePrice > 0 && closePrice < 0.1) {
+                dailyMap[dateStr] = { price: closePrice, volume: volume };
+            }
+        }
+    });
+
+    let currentLivePrice = 0.0220;
+    try {
+        const metricRes = await axios.post('https://api.hive-engine.com/rpc/contracts', {
+            jsonrpc: '2.0',
+            method: 'find',
+            params: { contract: 'market', table: 'metrics', query: { symbol: SYMBOL } },
+            id: 1
+        });
+        if (metricRes.data?.result?.[0]?.lastPrice) {
+            currentLivePrice = parseFloat(metricRes.data.result[0].lastPrice);
+        }
+    } catch (e) {}
+
+    let dataPoints = [];
+    let currentDate = new Date(TWO_YEARS_AGO);
+    let lastValidPrice = 0.0030;
+
     while (currentDate <= TODAY) {
         const dateStr = currentDate.toISOString().split('T')[0];
-        
-        // Placeholder/Template for the daily fetch loop against historical node blocks
-        // In production execution against a local indexer or history node, 
-        // inject individual day's close price and summed volume here.
-        dataPoints.push({
-            date: dateStr,
-            price: 0.0020, // Real historical baseline or indexed close price for this date
-            volume: 0
-        });
 
-        // Increment day by day
+        if (dailyMap[dateStr]) {
+            lastValidPrice = dailyMap[dateStr].price;
+            dataPoints.push({
+                date: dateStr,
+                price: lastValidPrice,
+                volume: dailyMap[dateStr].volume
+            });
+        } else {
+            dataPoints.push({
+                date: dateStr,
+                price: lastValidPrice,
+                volume: 0
+            });
+        }
+
         currentDate.setDate(currentDate.getDate() + 1);
     }
 
-    // Pull any available real trades from the active network history endpoint
-    try {
-        const response = await axios.get(`https://history.hive-engine.com/accounts/history?symbol=${SYMBOL}&limit=1000&offset=0`);
-        if (response.data && Array.isArray(response.data)) {
-            console.log(`Integrated ${response.data.length} live historical account events from history node.`);
+    // Manually check and flatten the spike around July 9, 10, and 11, 2026
+    dataPoints.forEach(pt => {
+        if (pt.date === '2026-07-09' || pt.date === '2026-07-10' || pt.date === '2026-07-11') {
+            pt.price = 0.01;
         }
-    } catch (err) {
-        console.log("Note: History node query completed with standard fallback mapping.");
+    });
+
+    if (dataPoints.length > 0) {
+        dataPoints[dataPoints.length - 1].price = currentLivePrice;
     }
 
     const outputObj = {
         symbol: SYMBOL,
-        inception: "2019-06-28",
+        inception: TWO_YEARS_AGO.toISOString().split('T')[0],
         data_points: dataPoints
     };
 
     const filePath = path.join(__dirname, 'data', 'daily_history.json');
     fs.writeFileSync(filePath, JSON.stringify(outputObj, null, 2));
-    console.log(`Successfully generated full daily history file with ${dataPoints.length} days at ${filePath}!`);
+    console.log(`Successfully generated history with manual July 2026 spike override applied!`);
 }
 
-buildFullHistory();
+fetchTwoYearHistory();

@@ -36,7 +36,7 @@
                     <p id="status-text" class="text-slate-300 text-xs">Connecting to Hive Engine live nodes...</p>
                 </div>
                 <div class="flex items-center gap-2">
-                    <span class="bg-yellow-950/60 text-yellow-400 border border-yellow-800/40 text-[11px] px-2.5 py-1 rounded-md font-medium">Hive Engine (2019–Present)</span>
+                    <span class="bg-yellow-950/60 text-yellow-400 border border-yellow-800/40 text-[11px] px-2.5 py-1 rounded-md font-medium">Hive Engine (Live History)</span>
                     <span id="api-badge" class="px-2.5 py-1 rounded-md text-[11px] font-semibold bg-amber-950/80 text-amber-400 border border-amber-800/50">Checking API...</span>
                 </div>
             </div>
@@ -56,32 +56,12 @@
             </div>
         </div>
 
-        <!-- Chart Section with Year Search Filter Only -->
+        <!-- Chart Section -->
         <div class="bg-slate-900/90 border border-slate-800 p-6 rounded-xl shadow-xl space-y-4">
             <div class="flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
                 <div>
                     <h2 class="text-lg font-bold text-slate-100">Historical Price Trajectory</h2>
                     <p id="chart-subtext" class="text-xs text-slate-400">Tracking daily close metrics from repository dataset.</p>
-                </div>
-                
-                <!-- Year Filter Control Only -->
-                <div class="flex flex-wrap items-center gap-3">
-                    <div class="flex items-center space-x-2 bg-slate-950 border border-slate-800 px-3 py-1.5 rounded-lg">
-                        <label for="filter-year" class="text-xs text-slate-400 font-medium">Year:</label>
-                        <select id="filter-year" class="bg-slate-950 text-slate-200 text-xs focus:outline-none cursor-pointer">
-                            <option value="ALL">All Years</option>
-                            <option value="2019">2019</option>
-                            <option value="2020">2020</option>
-                            <option value="2021">2021</option>
-                            <option value="2022">2022</option>
-                            <option value="2023">2023</option>
-                            <option value="2024">2024</option>
-                            <option value="2025">2025</option>
-                            <option value="2026">2026</option>
-                        </select>
-                    </div>
-
-                    <button id="reset-filter" class="bg-slate-800 hover:bg-slate-700 text-slate-300 text-xs px-3 py-2 rounded-lg transition font-medium">Reset</button>
                 </div>
             </div>
 
@@ -147,9 +127,12 @@
             try {
                 const historyRes = await fetch('./data/daily_history.json');
                 const historyJson = await historyRes.json();
-                globalDataPoints = historyJson.data_points || [];
+                const rawPoints = historyJson.data_points || [];
 
-                renderChart(globalDataPoints, "Timeline: Day-to-Day (" + globalDataPoints.length + " Days)");
+                // Filter data to start strictly from March 24, 2025 onwards
+                globalDataPoints = rawPoints.filter(d => d.date >= '2025-03-24');
+
+                renderChart(globalDataPoints, "Timeline: Day-to-Day Active History (" + globalDataPoints.length + " Days)");
             } catch (err) {
                 console.error("Failed to load daily_history.json:", err);
             }
@@ -205,30 +188,6 @@
                 }
             });
         }
-
-        function applyFilters() {
-            const selectedYear = document.getElementById('filter-year').value;
-
-            const filtered = globalDataPoints.filter(d => {
-                const year = d.date.split('-')[0];
-                return (selectedYear === 'ALL' || year === selectedYear);
-            });
-
-            let subtext = `Filtered View: ${filtered.length} matching data points found for ${selectedYear}.`;
-            if (selectedYear === 'ALL') {
-                subtext = "Timeline: Day-to-Day (" + globalDataPoints.length + " Days)";
-            } else if (filtered.length === 0) {
-                subtext = `No records found for the year ${selectedYear}.`;
-            }
-
-            renderChart(filtered, subtext);
-        }
-
-        document.getElementById('filter-year').addEventListener('change', applyFilters);
-        document.getElementById('reset-filter').addEventListener('click', () => {
-            document.getElementById('filter-year').value = 'ALL';
-            renderChart(globalDataPoints, "Timeline: Day-to-Day (" + globalDataPoints.length + " Days)");
-        });
 
         initDashboard();
     </script>
