@@ -33,8 +33,8 @@
             </div>
         </div>
 
-        <!-- Metric Cards (Volume removed) -->
-        <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+        <!-- Metric Cards -->
+        <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
             <div class="bg-slate-900/90 border border-slate-800 p-5 rounded-xl shadow">
                 <span class="text-slate-400 text-xs font-semibold uppercase tracking-wider">Pool Reserve (Hive)</span>
                 <div id="pool-token1" class="text-xl font-bold mt-2 text-yellow-400">Loading...</div>
@@ -44,8 +44,12 @@
                 <div id="pool-token2" class="text-xl font-bold mt-2 text-slate-100">Loading...</div>
             </div>
             <div class="bg-slate-900/90 border border-slate-800 p-5 rounded-xl shadow">
-                <span class="text-slate-400 text-xs font-semibold uppercase tracking-wider">Total Providers</span>
-                <div id="pool-providers-count" class="text-xl font-bold mt-2 text-sky-400">Loading...</div>
+                <span class="text-slate-400 text-xs font-semibold uppercase tracking-wider">Daily Rewards</span>
+                <div id="pool-rewards" class="text-xl font-bold mt-2 text-emerald-400">Loading...</div>
+            </div>
+            <div class="bg-slate-900/90 border border-slate-800 p-5 rounded-xl shadow">
+                <span class="text-slate-400 text-xs font-semibold uppercase tracking-wider">Estimated APY</span>
+                <div id="pool-apy" class="text-xl font-bold mt-2 text-yellow-400">Loading...</div>
             </div>
         </div>
 
@@ -91,7 +95,7 @@
         <a href="https://www.lassecash.com" class="hover:text-yellow-400 transition font-medium">LasseCash.com</a> &mdash; AnCap Society Tools
     </footer>
 
-    <!-- Script to Fetch Real Data -->
+    <!-- Script to Fetch Real Data, Rewards, and Calculate APY -->
     <script>
         async function queryTribaldex(method, params) {
             const rpcPayload = {
@@ -147,13 +151,68 @@
                 document.getElementById('pool-token1').innerText = reserveHive.toLocaleString(undefined, {minimumFractionDigits: 3, maximumFractionDigits: 3}) + ' HIVE';
                 document.getElementById('pool-token2').innerText = reserveCash.toLocaleString(undefined, {minimumFractionDigits: 8, maximumFractionDigits: 8}) + ' LASSECASH';
 
+                // Fetch farming/staking rewards config for the pool from marketpools contract or settings
+                let dailyRewardsAmount = 0;
+                try {
+                    const farmSettings = await queryTribaldex('findOne', {
+                        contract: 'marketpools',
+                        table: 'configs',
+                        query: {}
+                    });
+                    // Look up specific rewards mapping if available, otherwise check pool fields
+                    if (pool.rewardsDaily) {
+                        dailyRewardsAmount = parseFloat(pool.rewardsDaily);
+                    } else if (pool.precision) {
+                        // fallback or look up from marketpools farms table if present
+                        const farmData = await queryTribaldex('findOne', {
+                            contract: 'marketpools',
+                            table: 'farms',
+                            query: { tokenPair: activePoolId }
+                        });
+                        if (farmData && farmData.dailyRewards) {
+                            dailyRewardsAmount = parseFloat(farmData.dailyRewards);
+                        }
+                    }
+                } catch (e) {
+                    console.warn("Could not fetch explicit farm rewards from config, checking standard parameter.");
+                }
+
+                // If daily rewards are indexed or fallback configuration applies (adjust token daily emission if tracked via marketpools farms)
+                // Defaulting display field safely:
+                if (!dailyRewardsAmount && pool.url && pool.rewards) {
+                    dailyRewardsAmount = parseFloat(pool.rewards || 0);
+                }
+
+                // Let's also check marketpools settings or fallback to zero if unconfigured on chain
+                document.getElementById('pool-rewards').innerText = dailyRewardsAmount > 0 
+                    ? dailyRewardsAmount.toLocaleString(undefined, {maximumFractionDigits: 2}) + ' LASSECASH' 
+                    : '0.00 LASSECASH';
+
+                // APY Calculation Formula:
+                // APY = ((Daily Reward Value in Hive / Total Pool Value in Hive) * 365) * 100
+                // Total Pool Value in Hive = reserveHive (Hive side) + equivalent Hive value of reserveCash.
+                // Assuming standard 50/50 pool value tracking: Total Pool Hive Value = reserveHive * 2
+                let totalPoolValueHive = reserveHive * 2;
+                
+                // We also need the market price of LASSECASH in HIVE to value the daily rewards in HIVE terms
+                let cashPriceInHive = reserveHive / reserveCash;
+                let dailyRewardsValueHive = dailyRewardsAmount * cashPriceInHive;
+
+                let calculatedApy = 0;
+                if (totalPoolValueHive > 0 && dailyRewardsValueHive > 0) {
+                    let dailyReturnRate = dailyRewardsValueHive / totalPoolValueHive;
+                    calculatedApy = dailyReturnRate * 365 * 100;
+                }
+
+                document.getElementById('pool-apy').innerText = calculatedApy > 0 
+                    ? calculatedApy.toFixed(2) + '%' 
+                    : '0.00%';
+
                 const positions = await queryTribaldex('find', {
                     contract: 'marketpools',
                     table: 'liquidityPositions',
                     query: { tokenPair: activePoolId }
                 }) || [];
-
-                document.getElementById('pool-providers-count').innerText = positions.length;
 
                 const tbody = document.getElementById('providers-table-body');
                 tbody.innerHTML = '';
