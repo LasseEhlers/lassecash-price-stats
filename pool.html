@@ -33,8 +33,8 @@
             </div>
         </div>
 
-        <!-- Metric Cards (APY, Daily Rewards, Reserve Lassecash, Reserve SWAP.HIVE) -->
-        <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+        <!-- Metric Cards (1. APY, 2. Daily Rewards, 3. Liquidity Providers Count, 4. Reserve Lassecash, 5. Reserve SWAP.HIVE -> Adjusted to 4-grid layout or fit 5. Let's make it 5 columns or wrap neatly) -->
+        <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-4">
             <div class="bg-slate-900/90 border border-slate-800 p-5 rounded-xl shadow">
                 <span class="text-slate-400 text-xs font-semibold uppercase tracking-wider">Estimated APY</span>
                 <div id="pool-apy" class="text-xl font-bold mt-2 text-yellow-400">Loading...</div>
@@ -42,6 +42,10 @@
             <div class="bg-slate-900/90 border border-slate-800 p-5 rounded-xl shadow">
                 <span class="text-slate-400 text-xs font-semibold uppercase tracking-wider">LASSECASH Daily Reward</span>
                 <div id="pool-rewards" class="text-xl font-bold mt-2 text-emerald-400">Loading...</div>
+            </div>
+            <div class="bg-slate-900/90 border border-slate-800 p-5 rounded-xl shadow">
+                <span class="text-slate-400 text-xs font-semibold uppercase tracking-wider">Liquidity Providers</span>
+                <div id="pool-providers-count" class="text-xl font-bold mt-2 text-sky-400">Loading...</div>
             </div>
             <div class="bg-slate-900/90 border border-slate-800 p-5 rounded-xl shadow">
                 <span class="text-slate-400 text-xs font-semibold uppercase tracking-wider">Pool Reserve (LasseCash)</span>
@@ -206,6 +210,9 @@
                     table: 'liquidityPositions',
                     query: { tokenPair: activePoolId }
                 }) || [];
+
+                // Update Liquidity Providers Count Metric
+                document.getElementById('pool-providers-count').innerText = positions.length.toString();
 
                 const tbody = document.getElementById('providers-table-body');
                 tbody.innerHTML = '';
