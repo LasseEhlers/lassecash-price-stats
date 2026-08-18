@@ -95,8 +95,12 @@
         <a href="https://www.lassecash.com" class="hover:text-yellow-400 transition font-medium">LasseCash.com</a> &mdash; AnCap Society Tools
     </footer>
 
-    <!-- Script to Fetch Real Data with Rounded Numbers (No fixed decimals for Hive or LasseCash) -->
+    <!-- Script to Fetch Real Data with Danish Number Format (da-DK) and No Decimals on APY -->
     <script>
+        function formatDanish(val) {
+            return Math.round(val).toLocaleString('da-DK');
+        }
+
         async function queryTribaldex(method, params) {
             const rpcPayload = {
                 jsonrpc: '2.0',
@@ -148,8 +152,8 @@
                     reserveHive = parseFloat(pool.quoteQuantity || 0);
                 }
 
-                document.getElementById('pool-token1').innerText = Math.round(reserveHive).toLocaleString() + ' HIVE';
-                document.getElementById('pool-token2').innerText = Math.round(reserveCash).toLocaleString() + ' LASSECASH';
+                document.getElementById('pool-token1').innerText = formatDanish(reserveHive) + ' HIVE';
+                document.getElementById('pool-token2').innerText = formatDanish(reserveCash) + ' LASSECASH';
 
                 let dailyRewardsAmount = 0;
                 try {
@@ -180,7 +184,7 @@
                     dailyRewardsAmount = 2808.9888; 
                 }
 
-                document.getElementById('pool-rewards').innerText = Math.round(dailyRewardsAmount).toLocaleString() + ' LASSECASH';
+                document.getElementById('pool-rewards').innerText = formatDanish(dailyRewardsAmount) + ' LASSECASH';
 
                 let totalPoolValueHive = reserveHive * 2;
                 let cashPriceInHive = reserveHive / reserveCash;
@@ -193,8 +197,8 @@
                 }
 
                 document.getElementById('pool-apy').innerText = calculatedApy > 0 
-                    ? calculatedApy.toFixed(2) + '%' 
-                    : '0.00%';
+                    ? Math.round(calculatedApy).toLocaleString('da-DK') + '%' 
+                    : '0%';
 
                 const positions = await queryTribaldex('find', {
                     contract: 'marketpools',
@@ -215,8 +219,8 @@
                         const shareRatio = shares / totalShares;
                         const percentage = (shareRatio * 100).toFixed(2);
                         
-                        const userHive = Math.round(reserveHive * shareRatio).toLocaleString();
-                        const userCash = Math.round(reserveCash * shareRatio).toLocaleString();
+                        const userHive = formatDanish(reserveHive * shareRatio);
+                        const userCash = formatDanish(reserveCash * shareRatio);
 
                         const tr = document.createElement('tr');
                         tr.className = 'hover:bg-slate-800/40 transition';
