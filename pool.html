@@ -95,7 +95,7 @@
         <a href="https://www.lassecash.com" class="hover:text-yellow-400 transition font-medium">LasseCash.com</a> &mdash; AnCap Society Tools
     </footer>
 
-    <!-- Script to Fetch Real Data via Direct Public Tribaldex Endpoint (Bypassing fragile CORS proxies) -->
+    <!-- Script to Fetch Real Data with Configured Decimals (8 for LasseCash, 3 for SWAP.HIVE) -->
     <script>
         async function queryTribaldex(method, params) {
             const rpcPayload = {
@@ -105,7 +105,6 @@
                 id: 1
             };
 
-            // Using Tribaldex main API node endpoint which natively supports browser fetches
             const targetUrl = 'https://api.hive-engine.com/rpc/contracts';
 
             const res = await fetch(targetUrl, {
@@ -150,9 +149,9 @@
                     reserveHive = parseFloat(pool.quoteQuantity || 0);
                 }
 
-                document.getElementById('pool-token1').innerText = reserveHive.toLocaleString(undefined, {maximumFractionDigits: 2}) + ' HIVE';
-                document.getElementById('pool-token2').innerText = reserveCash.toLocaleString(undefined, {maximumFractionDigits: 2}) + ' LASSECASH';
-                document.getElementById('pool-volume').innerText = volume24h.toLocaleString(undefined, {maximumFractionDigits: 2}) + ' Vol';
+                document.getElementById('pool-token1').innerText = reserveHive.toLocaleString(undefined, {minimumFractionDigits: 3, maximumFractionDigits: 3}) + ' HIVE';
+                document.getElementById('pool-token2').innerText = reserveCash.toLocaleString(undefined, {minimumFractionDigits: 8, maximumFractionDigits: 8}) + ' LASSECASH';
+                document.getElementById('pool-volume').innerText = volume24h.toLocaleString(undefined, {minimumFractionDigits: 2, maximumFractionDigits: 2}) + ' Vol';
 
                 const positions = await queryTribaldex('find', {
                     contract: 'marketpools',
@@ -175,8 +174,8 @@
                         const shareRatio = shares / totalShares;
                         const percentage = (shareRatio * 100).toFixed(2);
                         
-                        const userHive = (reserveHive * shareRatio).toLocaleString(undefined, {maximumFractionDigits: 2});
-                        const userCash = (reserveCash * shareRatio).toLocaleString(undefined, {maximumFractionDigits: 2});
+                        const userHive = (reserveHive * shareRatio).toLocaleString(undefined, {minimumFractionDigits: 3, maximumFractionDigits: 3});
+                        const userCash = (reserveCash * shareRatio).toLocaleString(undefined, {minimumFractionDigits: 8, maximumFractionDigits: 8});
 
                         const tr = document.createElement('tr');
                         tr.className = 'hover:bg-slate-800/40 transition';
