@@ -95,10 +95,10 @@
         <a href="https://www.lassecash.com" class="hover:text-yellow-400 transition font-medium">LasseCash.com</a> &mdash; AnCap Society Tools
     </footer>
 
-    <!-- Script to Fetch Real Data with Danish Number Format (da-DK) and No Decimals on APY -->
+    <!-- Script to Fetch Real Data with Plain Numbers (No separators) -->
     <script>
-        function formatDanish(val) {
-            return Math.round(val).toLocaleString('da-DK');
+        function formatPlain(val) {
+            return Math.round(val).toString();
         }
 
         async function queryTribaldex(method, params) {
@@ -152,8 +152,8 @@
                     reserveHive = parseFloat(pool.quoteQuantity || 0);
                 }
 
-                document.getElementById('pool-token1').innerText = formatDanish(reserveHive) + ' HIVE';
-                document.getElementById('pool-token2').innerText = formatDanish(reserveCash) + ' LASSECASH';
+                document.getElementById('pool-token1').innerText = formatPlain(reserveHive) + ' HIVE';
+                document.getElementById('pool-token2').innerText = formatPlain(reserveCash) + ' LASSECASH';
 
                 let dailyRewardsAmount = 0;
                 try {
@@ -184,7 +184,7 @@
                     dailyRewardsAmount = 2808.9888; 
                 }
 
-                document.getElementById('pool-rewards').innerText = formatDanish(dailyRewardsAmount) + ' LASSECASH';
+                document.getElementById('pool-rewards').innerText = formatPlain(dailyRewardsAmount) + ' LASSECASH';
 
                 let totalPoolValueHive = reserveHive * 2;
                 let cashPriceInHive = reserveHive / reserveCash;
@@ -197,7 +197,7 @@
                 }
 
                 document.getElementById('pool-apy').innerText = calculatedApy > 0 
-                    ? Math.round(calculatedApy).toLocaleString('da-DK') + '%' 
+                    ? Math.round(calculatedApy).toString() + '%' 
                     : '0%';
 
                 const positions = await queryTribaldex('find', {
@@ -219,8 +219,8 @@
                         const shareRatio = shares / totalShares;
                         const percentage = (shareRatio * 100).toFixed(2);
                         
-                        const userHive = formatDanish(reserveHive * shareRatio);
-                        const userCash = formatDanish(reserveCash * shareRatio);
+                        const userHive = formatPlain(reserveHive * shareRatio);
+                        const userCash = formatPlain(reserveCash * shareRatio);
 
                         const tr = document.createElement('tr');
                         tr.className = 'hover:bg-slate-800/40 transition';
