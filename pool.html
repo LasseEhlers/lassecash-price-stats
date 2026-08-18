@@ -95,9 +95,9 @@
         <a href="https://www.lassecash.com" class="hover:text-yellow-400 transition font-medium">LasseCash.com</a> &mdash; AnCap Society Tools
     </footer>
 
-    <!-- Script to Fetch Real Data via CORS Proxy -->
+    <!-- Script to Fetch Real Data via Direct Public Tribaldex Endpoint (Bypassing fragile CORS proxies) -->
     <script>
-        async function queryHiveEngine(method, params) {
+        async function queryTribaldex(method, params) {
             const rpcPayload = {
                 jsonrpc: '2.0',
                 method: method,
@@ -105,11 +105,10 @@
                 id: 1
             };
 
-            // Using corsproxy.io to safely tunnel browser requests to the Hive-Engine node
+            // Using Tribaldex main API node endpoint which natively supports browser fetches
             const targetUrl = 'https://api.hive-engine.com/rpc/contracts';
-            const proxyUrl = `https://corsproxy.io/?` + encodeURIComponent(targetUrl);
 
-            const res = await fetch(proxyUrl, {
+            const res = await fetch(targetUrl, {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify(rpcPayload)
@@ -125,10 +124,10 @@
                 let activePoolId = '';
 
                 for (const pid of candidateIds) {
-                    const result = await queryHiveEngine('findOne', {
+                    const result = await queryTribaldex('findOne', {
                         contract: 'marketpools',
                         table: 'pools',
-                        query: { poolId: pid }
+                        query: { tokenPair: pid }
                     });
                     if (result) {
                         pool = result;
@@ -155,10 +154,10 @@
                 document.getElementById('pool-token2').innerText = reserveCash.toLocaleString(undefined, {maximumFractionDigits: 2}) + ' LASSECASH';
                 document.getElementById('pool-volume').innerText = volume24h.toLocaleString(undefined, {maximumFractionDigits: 2}) + ' Vol';
 
-                const positions = await queryHiveEngine('find', {
+                const positions = await queryTribaldex('find', {
                     contract: 'marketpools',
                     table: 'liquidityPositions',
-                    query: { poolId: activePoolId }
+                    query: { tokenPair: activePoolId }
                 }) || [];
 
                 document.getElementById('pool-providers-count').innerText = positions.length;
