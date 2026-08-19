@@ -1,0 +1,411 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>LasseStats — Richlist</title>
+    <!-- Favicon -->
+    <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'><rect width='32' height='32' rx='6' fill='black' stroke='%23facc15' stroke-width='2'/><text x='50%' y='55%' dominant-baseline='central' text-anchor='middle' font-family='monospace' font-weight='900' font-size='20' fill='%23facc15'>L</text></svg>">
+    <!-- Tailwind CSS CDN -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;900&display=swap" rel="stylesheet">
+    <style>body { font-family: 'Inter', sans-serif; }</style>
+</head>
+<body class="bg-[#0b0f19] text-slate-100 font-sans min-h-screen p-4 md:p-6 flex flex-col justify-between selection:bg-yellow-400 selection:text-black">
+
+    <div class="max-w-[95%] mx-auto space-y-6 w-full flex-grow">
+        
+        <!-- Header Branding Bar -->
+        <div class="bg-slate-900/90 border border-slate-800 rounded-xl p-4 flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
+            <div class="flex items-center space-x-3.5">
+                <div class="w-11 h-11 rounded-lg bg-black border-2 border-yellow-400 flex items-center justify-center shadow-lg shadow-yellow-400/10">
+                    <span class="font-black text-2xl text-yellow-400 tracking-tighter" style="font-family: monospace;">L</span>
+                </div>
+                <div>
+                    <span class="font-black text-xl tracking-wider text-white">LasseStats</span>
+                    <span class="block text-[11px] font-semibold tracking-widest text-yellow-400 uppercase">Powered by LasseCash</span>
+                </div>
+            </div>
+            
+            <div class="flex items-center gap-2">
+                <span class="bg-yellow-950/60 text-yellow-400 border border-yellow-800/40 text-[11px] px-2.5 py-1 rounded-md font-medium">Hive Engine + Pools API</span>
+                <span id="api-badge" class="px-2.5 py-1 rounded-md text-[11px] font-semibold bg-amber-950/80 text-amber-400 border border-amber-800/50">Connecting...</span>
+            </div>
+        </div>
+
+        <!-- Navigation Buttons -->
+        <div class="flex flex-col sm:flex-row justify-center gap-4">
+            <a href="index.html" class="px-6 py-3 bg-slate-800 hover:bg-slate-700 text-slate-200 font-bold text-sm uppercase tracking-wider rounded-xl transition text-center">
+                ← Back to Price Stats
+            </a>
+            <a href="pool.html" class="px-6 py-3 bg-slate-800 hover:bg-slate-700 text-slate-200 font-bold text-sm uppercase tracking-wider rounded-xl transition text-center">
+                ← Pool Statistics
+            </a>
+            <a href="https://www.lassecash.com" class="px-6 py-3 bg-yellow-400 hover:bg-yellow-300 text-black font-black text-sm uppercase tracking-wider rounded-xl transition text-center">
+                Back to LasseCash
+            </a>
+        </div>
+
+        <!-- Richlist Table Section -->
+        <div class="bg-slate-900/90 border border-slate-800 p-6 rounded-xl shadow-xl space-y-4">
+            <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
+                <div>
+                    <h2 class="text-lg font-bold text-slate-100">LASSECASH Holders Richlist</h2>
+                    <p class="text-xs text-slate-400">Account Value = LASSECASH + LASSECASH POWER (evaluated via corrected market pools ratio) + HIVE + HIVE POWER + HBD.</p>
+                </div>
+                <div class="text-xs text-slate-400 bg-slate-800/50 px-3 py-2 rounded-lg border border-slate-700/50">
+                    Click table headers to sort columns.
+                </div>
+            </div>
+
+            <div class="overflow-x-auto">
+                <table class="w-full text-left border-collapse">
+                    <thead>
+                        <tr class="border-b border-slate-800 text-xs text-slate-400 uppercase tracking-wider">
+                            <th class="py-3 px-3 w-12 cursor-pointer hover:text-yellow-400 transition" onclick="sortRichlist('rank')"># <span id="sort-rank" class="text-yellow-400">▲</span></th>
+                            <th class="py-3 px-3 cursor-pointer hover:text-yellow-400 transition" onclick="sortRichlist('account')">Account <span id="sort-account"></span></th>
+                            <th class="py-3 px-3 text-right cursor-pointer hover:text-yellow-400 transition" onclick="sortRichlist('balance')">LASSECASH <span id="sort-balance"></span></th>
+                            <th class="py-3 px-3 text-right cursor-pointer hover:text-yellow-400 transition" onclick="sortRichlist('stake')">LASSECASH POWER <span id="sort-stake"></span></th>
+                            <th class="py-3 px-3 text-right cursor-pointer hover:text-yellow-400 transition" onclick="sortRichlist('totalLasse')">Total LASSECASH <span id="sort-totalLasse"></span></th>
+                            <th class="py-3 px-3 text-right cursor-pointer hover:text-yellow-400 transition" onclick="sortRichlist('hive')">HIVE <span id="sort-hive"></span></th>
+                            <th class="py-3 px-3 text-right cursor-pointer hover:text-yellow-400 transition" onclick="sortRichlist('hp')">HIVE POWER <span id="sort-hp"></span></th>
+                            <th class="py-3 px-3 text-right cursor-pointer hover:text-yellow-400 transition" onclick="sortRichlist('totalHive')">Total HIVE <span id="sort-totalHive"></span></th>
+                            <th class="py-3 px-3 text-right cursor-pointer hover:text-yellow-400 transition" onclick="sortRichlist('hbd')">HBD <span id="sort-hbd"></span></th>
+                            <th class="py-3 px-3 text-right cursor-pointer hover:text-yellow-400 transition" onclick="sortRichlist('accountValue')">Account Value ($ USD) <span id="sort-accountValue"></span></th>
+                        </tr>
+                    </thead>
+                    <tbody id="richlist-table-body" class="divide-y divide-slate-800/60 text-sm">
+                        <tr>
+                            <td colspan="10" class="py-6 text-center text-slate-500">Querying Hive Engine pools & balances...</td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+
+            <!-- Pagination Controls -->
+            <div id="pagination-container" class="flex flex-col sm:flex-row justify-between items-center gap-4 pt-4 border-t border-slate-800 text-xs text-slate-400">
+                <div id="pagination-info">Loading records...</div>
+                <div class="flex items-center gap-2">
+                    <button id="prev-btn" onclick="changePage(-1)" class="px-4 py-2 bg-slate-800 hover:bg-slate-700 text-slate-200 font-bold rounded-lg transition disabled:opacity-40 disabled:cursor-not-allowed">
+                        ← Previous 50
+                    </button>
+                    <span id="page-indicator" class="px-3 py-2 bg-slate-800/40 rounded-lg border border-slate-700/50 text-slate-200 font-semibold">Page 1</span>
+                    <button id="next-btn" onclick="changePage(1)" class="px-4 py-2 bg-slate-800 hover:bg-slate-700 text-slate-200 font-bold rounded-lg transition disabled:opacity-40 disabled:cursor-not-allowed">
+                        Next 50 →
+                    </button>
+                </div>
+            </div>
+        </div>
+
+    </div>
+
+    <!-- Footer -->
+    <footer class="max-w-7xl mx-auto w-full mt-8 py-4 text-center text-xs text-slate-500 border-t border-slate-800/80">
+        <a href="https://www.lassecash.com" class="hover:text-yellow-400 transition font-medium">LasseCash.com</a> &mdash; AnCap Society Tools
+    </footer>
+
+    <!-- Script to Fetch and Paginate Richlist -->
+    <script>
+        let allHolders = [];
+        let currentPage = 1;
+        const pageSize = 50;
+        let currentSortColumn = 'totalLasse';
+        let currentSortAscending = false;
+        let conversionRates = {
+            lassecashPriceInSwapHbd: 0.0008342, 
+            hivePriceInSwapHbd: 1.0
+        };
+
+        async function queryTribaldex(method, params) {
+            const rpcPayload = { jsonrpc: '2.0', method: method, params: params, id: 1 };
+            const res = await fetch('https://api.hive-engine.com/rpc/contracts', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(rpcPayload)
+            });
+            const json = await res.json();
+            return json.result;
+        }
+
+        async function queryHiveNode(method, params) {
+            const rpcPayload = { jsonrpc: '2.0', method: method, params: params, id: 1 };
+            const res = await fetch('https://api.hive.blog', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(rpcPayload)
+            });
+            const json = await res.json();
+            return json.result;
+        }
+
+        async function fetchMarketRates() {
+            try {
+                const hbdPool = await queryTribaldex('findOne', {
+                    contract: 'marketpools',
+                    table: 'pools',
+                    query: { tokenPair: { $all: ['SWAP.HIVE', 'SWAP.HBD'] } }
+                });
+
+                let swapHiveToHbdRate = 1.0;
+                if (hbdPool) {
+                    const q1 = parseFloat(hbdPool.baseQuantity || 0);
+                    const q2 = parseFloat(hbdPool.quoteQuantity || 0);
+                    const isBaseHbd = (hbdPool.baseSymbol === 'SWAP.HBD');
+                    const hbdQty = isBaseHbd ? q1 : q2;
+                    const hiveQty = isBaseHbd ? q2 : q1;
+                    if (hiveQty > 0) {
+                        swapHiveToHbdRate = hbdQty / hiveQty;
+                        conversionRates.hivePriceInSwapHbd = swapHiveToHbdRate;
+                    }
+                }
+
+                const lassecashPool = await queryTribaldex('findOne', {
+                    contract: 'marketpools',
+                    table: 'pools',
+                    query: { tokenPair: { $all: ['SWAP.HIVE', 'LASSECASH'] } }
+                });
+
+                if (lassecashPool) {
+                    const q1 = parseFloat(lassecashPool.baseQuantity || 0);
+                    const q2 = parseFloat(lassecashPool.quoteQuantity || 0);
+                    const isBaseLasse = (lassecashPool.baseSymbol === 'LASSECASH');
+                    const lasseQty = isBaseLasse ? q1 : q2;
+                    const hiveQty = isBaseLasse ? q2 : q1;
+
+                    if (lasseQty > 0) {
+                        const hivePerLasse = hiveQty / lasseQty;
+                        conversionRates.lassecashPriceInSwapHbd = hivePerLasse * swapHiveToHbdRate;
+                    }
+                }
+            } catch (e) {
+                console.error("Error fetching market rates, using defaults:", e);
+            }
+        }
+
+        function vestToHive(vestingShares, dynamicGlobalProperties) {
+            if (!dynamicGlobalProperties) return 0;
+            const totalVests = parseFloat(dynamicGlobalProperties.total_vesting_shares);
+            const totalHive = parseFloat(dynamicGlobalProperties.total_vesting_fund_hive);
+            if (totalVests === 0) return 0;
+            return (parseFloat(vestingShares) * totalHive) / totalVests;
+        }
+
+        async function initRichlist() {
+            try {
+                await fetchMarketRates();
+
+                let offset = 0;
+                let limit = 1000;
+                let rawBalances = [];
+                let fetchMore = true;
+
+                while (fetchMore) {
+                    const chunk = await queryTribaldex('find', {
+                        contract: 'tokens',
+                        table: 'balances',
+                        query: { symbol: 'LASSECASH' },
+                        limit: limit,
+                        offset: offset
+                    }) || [];
+
+                    rawBalances = rawBalances.concat(chunk);
+                    if (chunk.length < limit) {
+                        fetchMore = false;
+                    } else {
+                        offset += limit;
+                    }
+                }
+
+                allHolders = rawBalances.filter(item => {
+                    const balance = parseFloat(item.balance || 0);
+                    const stake = parseFloat(item.stake || 0);
+                    return (balance + stake) > 0;
+                }).map(item => {
+                    const balance = parseFloat(item.balance || 0);
+                    const stake = parseFloat(item.stake || 0);
+                    return {
+                        account: item.account,
+                        balance: balance,
+                        stake: stake,
+                        totalLasse: balance + stake,
+                        hive: 0,
+                        hp: 0,
+                        totalHive: 0,
+                        hbd: 0,
+                        accountValue: 0,
+                        fetchedHiveData: false
+                    };
+                });
+
+                sortHoldersData();
+                await loadCurrentPageData();
+
+                const badge = document.getElementById('api-badge');
+                badge.innerText = 'Online (Accurate Pools)';
+                badge.className = 'px-2.5 py-1 rounded-md text-[11px] font-semibold bg-emerald-950 text-emerald-400 border border-emerald-800/50';
+
+            } catch (err) {
+                console.error("Initialization error:", err);
+                const badge = document.getElementById('api-badge');
+                badge.innerText = 'Error Loading';
+                badge.className = 'px-2.5 py-1 rounded-md text-[11px] font-semibold bg-rose-950 text-rose-400 border border-rose-800/50';
+            }
+        }
+
+        async function loadCurrentPageData() {
+            const startIndex = (currentPage - 1) * pageSize;
+            const endIndex = Math.min(startIndex + pageSize, allHolders.length);
+            const pageSlice = allHolders.slice(startIndex, endIndex);
+
+            const unfetchedAccounts = pageSlice.filter(h => !h.fetchedHiveData).map(h => h.account);
+
+            if (unfetchedAccounts.length > 0) {
+                try {
+                    const gProps = await queryHiveNode('condenser_api.get_dynamic_global_properties', []);
+                    const accountsData = await queryHiveNode('condenser_api.get_accounts', [unfetchedAccounts]) || [];
+
+                    const hiveMap = {};
+                    accountsData.forEach(acc => {
+                        const liquidHive = parseFloat(acc.balance.split(' ')[0]) || 0;
+                        const savingsHive = parseFloat(acc.savings_balance.split(' ')[0]) || 0;
+                        const hbd = parseFloat(acc.hbd_balance.split(' ')[0]) || 0;
+                        const savingsHbd = parseFloat(acc.savings_hbd_balance.split(' ')[0]) || 0;
+                        
+                        const hp = vestToHive(acc.vesting_shares, gProps);
+                        const delegatedHp = vestToHive(acc.delegated_vesting_shares, gProps);
+                        const receivedHp = vestToHive(acc.received_vesting_shares, gProps);
+                        const effectiveHp = hp - delegatedHp + receivedHp;
+
+                        hiveMap[acc.name] = {
+                            hive: liquidHive + savingsHive,
+                            hp: effectiveHp,
+                            hbd: hbd + savingsHbd
+                        };
+                    });
+
+                    allHolders.forEach(item => {
+                        if (hiveMap[item.account]) {
+                            const hData = hiveMap[item.account];
+                            item.hive = hData.hive;
+                            item.hp = hData.hp;
+                            item.totalHive = hData.hive + hData.hp;
+                            item.hbd = hData.hbd;
+
+                            const lassecashUsd = item.totalLasse * conversionRates.lassecashPriceInSwapHbd;
+                            const hiveUsd = item.totalHive * conversionRates.hivePriceInSwapHbd;
+                            const hbdUsd = item.hbd;
+
+                            item.accountValue = lassecashUsd + hiveUsd + hbdUsd;
+                            item.fetchedHiveData = true;
+                        }
+                    });
+                } catch (e) {
+                    console.error("Failed fetching Hive node batch data", e);
+                }
+            }
+
+            renderTable();
+            updatePaginationControls();
+        }
+
+        function sortRichlist(column) {
+            if (currentSortColumn === column) {
+                currentSortAscending = !currentSortAscending;
+            } else {
+                currentSortColumn = column;
+                currentSortAscending = (column === 'account');
+            }
+            sortHoldersData();
+            currentPage = 1;
+            loadCurrentPageData();
+            updateSortIndicators();
+        }
+
+        function sortHoldersData() {
+            allHolders.sort((a, b) => {
+                let valA = a[currentSortColumn];
+                let valB = b[currentSortColumn];
+
+                if (typeof valA === 'string') {
+                    valA = valA.toLowerCase();
+                    valB = valB.toLowerCase();
+                    if (valA < valB) return currentSortAscending ? -1 : 1;
+                    if (valA > valB) return currentSortAscending ? 1 : -1;
+                    return 0;
+                } else {
+                    return currentSortAscending ? valA - valB : valB - valA;
+                }
+            });
+        }
+
+        function updateSortIndicators() {
+            const columns = ['rank', 'account', 'balance', 'stake', 'totalLasse', 'hive', 'hp', 'totalHive', 'hbd', 'accountValue'];
+            columns.forEach(col => {
+                const indicator = document.getElementById(`sort-${col}`);
+                if (indicator) {
+                    if (currentSortColumn === col) {
+                        indicator.innerText = currentSortAscending ? '▲' : '▼';
+                        indicator.className = 'text-yellow-400';
+                    } else {
+                        indicator.innerText = '';
+                    }
+                }
+            });
+        }
+
+        function changePage(direction) {
+            const maxPage = Math.ceil(allHolders.length / pageSize);
+            const newPage = currentPage + direction;
+            if (newPage >= 1 && newPage <= maxPage) {
+                currentPage = newPage;
+                loadCurrentPageData();
+            }
+        }
+
+        function updatePaginationControls() {
+            const maxPage = Math.ceil(allHolders.length / pageSize) || 1;
+            const startIndex = (currentPage - 1) * pageSize + 1;
+            const endIndex = Math.min(currentPage * pageSize, allHolders.length);
+
+            document.getElementById('pagination-info').innerText = `Showing records ${startIndex}-${endIndex} of ${allHolders.length}`;
+            document.getElementById('page-indicator').innerText = `Page ${currentPage} of ${maxPage}`;
+            document.getElementById('prev-btn').disabled = (currentPage === 1);
+            document.getElementById('next-btn').disabled = (currentPage === maxPage);
+        }
+
+        function renderTable() {
+            const tbody = document.getElementById('richlist-table-body');
+            tbody.innerHTML = '';
+
+            if (allHolders.length === 0) {
+                tbody.innerHTML = `<tr><td colspan="10" class="py-6 text-center text-slate-500">No LASSECASH holders found.</td></tr>`;
+                return;
+            }
+
+            const startIndex = (currentPage - 1) * pageSize;
+            const pageSlice = allHolders.slice(startIndex, startIndex + pageSize);
+
+            pageSlice.forEach((row, index) => {
+                const absoluteRank = startIndex + index + 1;
+                const tr = document.createElement('tr');
+                tr.className = 'hover:bg-slate-800/40 transition';
+                tr.innerHTML = `
+                    <td class="py-3 px-3 font-bold text-slate-500">${absoluteRank}</td>
+                    <td class="py-3 px-3 font-semibold text-yellow-400">@${row.account}</td>
+                    <td class="py-3 px-3 text-right text-slate-300">${row.balance.toLocaleString('en-US', {maximumFractionDigits: 8})}</td>
+                    <td class="py-3 px-3 text-right text-emerald-400">${row.stake.toLocaleString('en-US', {maximumFractionDigits: 8})}</td>
+                    <td class="py-3 px-3 text-right font-semibold text-yellow-400">${row.totalLasse.toLocaleString('en-US', {maximumFractionDigits: 8})}</td>
+                    <td class="py-3 px-3 text-right text-slate-300">${row.fetchedHiveData ? row.hive.toLocaleString('en-US', {maximumFractionDigits: 3}) : '<span class="text-slate-600">Loading...</span>'}</td>
+                    <td class="py-3 px-3 text-right text-sky-400">${row.fetchedHiveData ? row.hp.toLocaleString('en-US', {maximumFractionDigits: 3}) : '<span class="text-slate-600">Loading...</span>'}</td>
+                    <td class="py-3 px-3 text-right font-semibold text-sky-300">${row.fetchedHiveData ? row.totalHive.toLocaleString('en-US', {maximumFractionDigits: 3}) : '<span class="text-slate-600">Loading...</span>'}</td>
+                    <td class="py-3 px-3 text-right text-emerald-300">${row.fetchedHiveData ? row.hbd.toLocaleString('en-US', {maximumFractionDigits: 3}) : '<span class="text-slate-600">Loading...</span>'}</td>
+                    <td class="py-3 px-3 text-right font-bold text-amber-400">${row.fetchedHiveData ? '$' + row.accountValue.toLocaleString('en-US', {minimumFractionDigits: 2, maximumFractionDigits: 2}) : '<span class="text-slate-600">Loading...</span>'}</td>
+                `;
+                tbody.appendChild(tr);
+            });
+        }
+
+        initRichlist();
+    </script>
+</body>
+</html>

@@ -13,7 +13,7 @@
 </head>
 <body class="bg-[#0b0f19] text-slate-100 font-sans min-h-screen p-4 md:p-6 flex flex-col justify-between selection:bg-yellow-400 selection:text-black">
 
-    <div class="max-w-6xl mx-auto space-y-6 w-full flex-grow">
+    <div class="max-w-7xl mx-auto space-y-6 w-full flex-grow">
         
         <!-- Header Branding Bar -->
         <div class="bg-slate-900/90 border border-slate-800 rounded-xl p-4 flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
@@ -33,7 +33,7 @@
             </div>
         </div>
 
-        <!-- Metric Cards (1. APY, 2. Daily Rewards, 3. Liquidity Providers Count, 4. Reserve Lassecash, 5. Reserve SWAP.HIVE -> Adjusted to 4-grid layout or fit 5. Let's make it 5 columns or wrap neatly) -->
+        <!-- Metric Cards -->
         <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-4">
             <div class="bg-slate-900/90 border border-slate-800 p-5 rounded-xl shadow">
                 <span class="text-slate-400 text-xs font-semibold uppercase tracking-wider">Estimated APY</span>
@@ -62,6 +62,9 @@
             <a href="index.html" class="px-6 py-3 bg-slate-800 hover:bg-slate-700 text-slate-200 font-bold text-sm uppercase tracking-wider rounded-xl transition text-center">
                 ← Back to Price Stats
             </a>
+            <a href="richlist.html" class="px-6 py-3 bg-slate-800 hover:bg-slate-700 text-slate-200 font-bold text-sm uppercase tracking-wider rounded-xl transition text-center">
+                ← Back to Richlist
+            </a>
             <a href="https://www.lassecash.com" class="px-6 py-3 bg-yellow-400 hover:bg-yellow-300 text-black font-black text-sm uppercase tracking-wider rounded-xl transition text-center">
                 Back to LasseCash
             </a>
@@ -78,15 +81,18 @@
                 <table class="w-full text-left border-collapse">
                     <thead>
                         <tr class="border-b border-slate-800 text-xs text-slate-400 uppercase tracking-wider">
+                            <th class="py-3 px-4 w-12">#</th>
                             <th class="py-3 px-4">Account</th>
                             <th class="py-3 px-4">Est. SWAP.HIVE</th>
                             <th class="py-3 px-4">Est. LASSECASH</th>
                             <th class="py-3 px-4 text-right">Pool Share</th>
+                            <th class="py-3 px-4 text-right">Daily Earned (LASSECASH)</th>
+                            <th class="py-3 px-4 text-right">Daily Value ($ USD based on HBD)</th>
                         </tr>
                     </thead>
                     <tbody id="providers-table-body" class="divide-y divide-slate-800/60 text-sm">
                         <tr>
-                            <td colspan="4" class="py-6 text-center text-slate-500">Querying chain liquidity positions...</td>
+                            <td colspan="7" class="py-6 text-center text-slate-500">Querying chain liquidity positions...</td>
                         </tr>
                     </tbody>
                 </table>
@@ -96,11 +102,11 @@
     </div>
 
     <!-- Footer -->
-    <footer class="max-w-6xl mx-auto w-full mt-8 py-4 text-center text-xs text-slate-500 border-t border-slate-800/80">
+    <footer class="max-w-7xl mx-auto w-full mt-8 py-4 text-center text-xs text-slate-500 border-t border-slate-800/80">
         <a href="https://www.lassecash.com" class="hover:text-yellow-400 transition font-medium">LasseCash.com</a> &mdash; AnCap Society Tools
     </footer>
 
-    <!-- Script to Fetch Real Data with Plain Numbers (No separators) -->
+    <!-- Script to Fetch Real Data -->
     <script>
         function formatPlain(val) {
             return Math.round(val).toString();
@@ -123,6 +129,16 @@
             });
             const json = await res.json();
             return json.result;
+        }
+
+        async function fetchHivePrice() {
+            try {
+                const res = await fetch('https://api.coingecko.com/api/v3/simple/price?ids=hive&vs_currencies=usd');
+                const data = await res.json();
+                return data.hive ? data.hive.usd : 0.20;
+            } catch (e) {
+                return 0.20;
+            }
         }
 
         async function loadLivePoolData() {
@@ -211,32 +227,56 @@
                     query: { tokenPair: activePoolId }
                 }) || [];
 
-                // Update Liquidity Providers Count Metric
                 document.getElementById('pool-providers-count').innerText = positions.length.toString();
+
+                const hiveUsdPrice = await fetchHivePrice();
+                const cashPriceInUsd = cashPriceInHive * hiveUsdPrice;
 
                 const tbody = document.getElementById('providers-table-body');
                 tbody.innerHTML = '';
 
                 if (positions.length === 0) {
-                    tbody.innerHTML = `<tr><td colspan="4" class="py-6 text-center text-slate-500">No liquidity providers found for this pool.</td></tr>`;
+                    tbody.innerHTML = `<tr><td colspan="7" class="py-6 text-center text-slate-500">No liquidity providers found for this pool.</td></tr>`;
                 } else {
                     positions.sort((a, b) => parseFloat(b.shares) - parseFloat(a.shares));
 
-                    positions.forEach(pos => {
+                    positions.forEach((pos, index) => {
                         const shares = parseFloat(pos.shares || 0);
                         const shareRatio = shares / totalShares;
-                        const percentage = (shareRatio * 100).toFixed(2);
                         
-                        const userHive = formatPlain(reserveHive * shareRatio);
-                        const userCash = formatPlain(reserveCash * shareRatio);
+                        const userCashNum = reserveCash * shareRatio;
+                        const isSingleDigit = userCashNum < 10;
+
+                        let userHiveStr, userCashStr, percentageStr, userDailyCashStr, userDailyUsdStr;
+
+                        if (isSingleDigit) {
+                            const userHiveNum = reserveHive * shareRatio;
+                            const userDailyCashNum = dailyRewardsAmount * shareRatio;
+                            const userDailyUsdNum = userDailyCashNum * cashPriceInUsd;
+
+                            userHiveStr = userHiveNum.toFixed(3) + ' SWAP.HIVE';
+                            userCashStr = userCashNum.toFixed(8) + ' LASSECASH';
+                            percentageStr = (shareRatio * 100).toFixed(4) + '%';
+                            userDailyCashStr = userDailyCashNum.toFixed(8) + ' LASSECASH';
+                            userDailyUsdStr = '$' + userDailyUsdNum.toFixed(8);
+                        } else {
+                            userHiveStr = formatPlain(reserveHive * shareRatio) + ' SWAP.HIVE';
+                            userCashStr = formatPlain(userCashNum) + ' LASSECASH';
+                            percentageStr = (shareRatio * 100).toFixed(2) + '%';
+                            userDailyCashStr = Math.round(dailyRewardsAmount * shareRatio) + ' LASSECASH';
+                            userDailyUsdStr = '$' + (Math.round(dailyRewardsAmount * shareRatio) * cashPriceInUsd).toFixed(2);
+                        }
 
                         const tr = document.createElement('tr');
                         tr.className = 'hover:bg-slate-800/40 transition';
                         tr.innerHTML = `
+                            <td class="py-3 px-4 font-bold text-slate-500">${index + 1}</td>
                             <td class="py-3 px-4 font-semibold text-yellow-400">@${pos.account}</td>
-                            <td class="py-3 px-4 text-slate-300">${userHive} SWAP.HIVE</td>
-                            <td class="py-3 px-4 text-slate-300">${userCash} LASSECASH</td>
-                            <td class="py-3 px-4 text-right font-medium text-slate-200">${percentage}%</td>
+                            <td class="py-3 px-4 text-slate-300">${userHiveStr}</td>
+                            <td class="py-3 px-4 text-slate-300">${userCashStr}</td>
+                            <td class="py-3 px-4 text-right font-medium text-slate-200">${percentageStr}</td>
+                            <td class="py-3 px-4 text-right font-semibold text-emerald-400">${userDailyCashStr}</td>
+                            <td class="py-3 px-4 text-right font-semibold text-yellow-400">${userDailyUsdStr}</td>
                         `;
                         tbody.appendChild(tr);
                     });
